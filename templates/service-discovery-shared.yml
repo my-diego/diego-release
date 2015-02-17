@@ -1,0 +1,2 @@
+etcd_cluster: (( merge ))
+consul_servers: (( merge ))

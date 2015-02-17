@@ -1,95 +1,240 @@
 meta:
   environment: (( merge ))
   stemcell: (( merge ))
-
-name: (( merge || meta.environment "-diego" ))
+  zone: (( merge ))
 
 director_uuid: (( merge ))
 
-releases: (( merge ))
+name: (( merge || meta.environment "-diego-" meta.zone ))
 
-networks: (( merge ))
+releases:
+  - name: diego
+    version: latest
+  - name: cf
+    version: latest
 
-jobs: (( merge ))
+external_cf_services: (( merge ))
+etcd_cluster: (( merge ))
+consul_servers: (( merge ))
 
-properties: ~
+jobs:
+  - name: brain
+    release: diego
+    templates:
+      - name: consul-agent
+      - name: auctioneer
+      - name: converger
+      - name: runtime_metrics_server
+      - name: metron_agent
+        release: cf
+    instances: 1
+    resource_pool: large
+    networks:
+      - name: diego
+    properties:
+      consul:
+        agent:
+          servers:
+            lan: (( .properties.diego.consul_server.machines ))
+
+  - name: cell
+    release: diego
+    templates:
+      - name: rep
+      - name: consul-agent
+      - name: executor
+      - name: garden-linux
+      - name: receptor
+      - name: metron_agent
+        release: cf
+    instances: 1
+    resource_pool: large
+    networks:
+      - name: diego
+    properties:
+      consul:
+        agent:
+          services: [receptor]
+          servers:
+            lan: (( .properties.diego.consul_server.machines ))
+
+  - name: cc_bridge
+    release: diego
+    templates:
+      - name: stager
+      - name: nsync
+      - name: tps
+      - name: file_server
+      - name: consul-agent
+      - name: metron_agent
+        release: cf
+    instances: 1
+    resource_pool: bridge
+    networks:
+      - name: diego
+    properties:
+      consul:
+        agent:
+          services: [stager, file_server]
+          servers:
+            lan: (( .properties.diego.consul_server.machines ))
+
+  - name: route_emitter
+    release: diego
+    templates:
+      - name: route_emitter
+      - name: consul-agent
+      - name: metron_agent
+        release: cf
+    instances: 1
+    resource_pool: small
+    networks:
+      - name: diego
+    properties:
+      consul:
+        agent:
+          servers:
+            lan: (( .properties.diego.consul_server.machines ))
+
+properties:
+  # -- Properties below are used by jobs from cf-release --
+  nats: # For metron_agent to talk to collector
+    machines: (( external_cf_services.nats.machines ))
+    user: (( external_cf_services.nats.user ))
+    password: (( external_cf_services.nats.password ))
+    port: (( external_cf_services.nats.port ))
+
+  etcd: # For metron_agent to find loggregator
+    machines: (( external_cf_services.etcd.machines ))
+
+  syslog_daemon_config: ~
+
+  metron_agent:
+    zone: (( meta.zone ))
+
+  loggregator_endpoint:
+    shared_secret: (( external_cf_services.loggregator_endpoint.shared_secret ))
+
+  diego:
+    # -- Global properties --
+    api_url: (( "http://" receptor.username ":" receptor.password "@receptor.service.dc1.consul:8888" ))
+
+    ssl:
+      skip_cert_verify: false
+
+    nats: (( external_cf_services.nats ))
+
+    etcd:
+      machines: (( etcd_cluster ))
+
+    consul_server:
+      machines: (( consul_servers ))
+
+    # -- Helper aliases --
+    nats_config:
+      machines: (( external_cf_services.nats.machines ))
+      username: (( external_cf_services.nats.user ))
+      password: (( external_cf_services.nats.password ))
+      port: (( external_cf_services.nats.port ))
+
+    etcd_config:
+      machines: (( .properties.diego.etcd.machines ))
+
+    cc_config:
+      base_url: (( external_cf_services.cc.srv_api_uri ))
+      basic_auth_password: (( external_cf_services.cc.internal_api_password ))
+      staging_upload_user: (( external_cf_services.cc.staging_upload_user ))
+      staging_upload_password: (( external_cf_services.cc.staging_upload_password ))
+
+    # -- Job specific properties --
+    auctioneer:
+      etcd: (( etcd_config ))
+
+    converger:
+      etcd: (( etcd_config ))
+
+    runtime_metrics_server:
+      etcd: (( etcd_config ))
+
+    file_server:
+      cc: (( cc_config ))
+
+    nsync:
+      diego_api_url: (( .properties.diego.api_url ))
+      nats: (( nats_config ))
+      etcd: (( etcd_config ))
+      cc: (( cc_config ))
+      lifecycle_bundles: ~
+
+    stager:
+      diego_api_url: (( .properties.diego.api_url ))
+      nats: (( nats_config ))
+      cc: (( cc_config ))
+      lifecycle_bundles: ~
+      min_disk_mb: ~
+
+    tps:
+      diego_api_url: (( .properties.diego.api_url ))
+      nats: (( nats_config ))
+
+    receptor:
+      nats: (( nats_config ))
+      etcd: (( etcd_config ))
+      register_with_router: false
+      domain_names: ~
+      cors_enabled: false
+      username: ""
+      password: ""
+
+    route_emitter:
+      diego_api_url: (( .properties.diego.api_url ))
+      nats: (( nats_config ))
+      etcd: (( etcd_config ))
+
+    rep:
+      etcd: (( etcd_config ))
+      zone: (( meta.zone ))
+
+    executor:
+      garden: ~
+      allow_privileged: ~
+      export_network_env_vars: ~
+
+    garden-linux: ~
+
 
 compilation:
   workers: 6
-  network: diego1
+  network: diego
   reuse_compilation_vms: true
   cloud_properties: (( merge ))
 
 update:
   canaries: 1
-  max_in_flight: 3
+  max_in_flight: 1
   serial: false
-  canary_watch_time: 30000-600000
+  canary_watch_time: 5000-600000
   update_watch_time: 5000-600000
 
+networks: (( merge ))
+
 resource_pools:
-  - name: small_z1
-    network: diego1
-    size: (( auto ))
+  - name: small
+    network: diego
     stemcell: (( meta.stemcell ))
     cloud_properties: (( merge ))
 
-  - name: small_z2
-    network: diego2
-    size: (( auto ))
+  - name: medium
+    network: diego
     stemcell: (( meta.stemcell ))
     cloud_properties: (( merge ))
 
-  - name: small_z3
-    network: diego3
-    size: (( auto ))
+  - name: large
+    network: diego
     stemcell: (( meta.stemcell ))
     cloud_properties: (( merge ))
 
-  - name: medium_z1
-    network: diego1
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: medium_z2
-    network: diego2
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: medium_z3
-    network: diego3
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: large_z1
-    network: diego1
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: large_z2
-    network: diego2
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: large_z3
-    network: diego3
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: bridge_z1
-    network: diego1
-    size: (( auto ))
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
-  - name: bridge_z2
-    network: diego2
-    size: (( auto ))
+  - name: bridge
+    network: diego
     stemcell: (( meta.stemcell ))
     cloud_properties: (( merge ))

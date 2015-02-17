@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+templates=$(dirname $0)/../templates
+
+infrastructure=$1
+cf_release=$2
+
+function usage() {
+  echo "usage:
+  $0 <aws|bosh-lite> [stubs...]
+
+e.g.:
+  $0 aws \\
+    ~/workspace/deployments-aws/ketchup/cf-aws-stub.yml \\
+    ~/workspace/deployments-aws/ketchup/cf-shared-secrets.yml
+"
+  exit 1
+}
+
+if [ "$#" -lt 1 ]; then
+  usage
+fi
+
+shift
+
+if [ "$infrastructure" != "aws" ] && [ "$infrastructure" != "bosh-lite" ]; then
+  usage
+fi
+
+spiff merge \
+  $templates/consul-and-etcd.yml \
+  $templates/service-discovery-infrastructure-${infrastructure}.yml \
+  "$@"

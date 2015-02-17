@@ -1,67 +1,12 @@
 meta:
-  zones:
-    z1: (( properties.template_only.aws.availability_zone ))
-    z2: (( properties.template_only.aws.availability_zone2 ))
-    z3: (( properties.template_only.aws.availability_zone3 ))
+  aws_availability_zone: (( merge ))
+
   stemcell:
     name: bosh-aws-xen-ubuntu-trusty-go_agent
     version: latest
 
-networks: (( merge ))
-
-jobs:
-  - name: cell_z1
-    instances: 2
-
-  - name: cell_z2
-    instances: 2
-
-  - name: etcd_z1
-    instances: 1
-    networks:
-      - name: diego1
-        static_ips: (( static_ips(0) ))
-
-  - name: etcd_z2
-    instances: 0
-    networks:
-      - name: diego2
-        static_ips: (( static_ips(0) ))
-
-  - name: etcd_z3
-    instances: 0
-    networks:
-      - name: diego3
-        static_ips: (( static_ips(0) ))
-
-  - name: consul_z1
-    instances: 1
-    networks:
-      - name: diego1
-        static_ips: (( static_ips(1) ))
-
-  - name: consul_z2
-    instances: 1
-    networks:
-      - name: diego2
-        static_ips: (( static_ips(1) ))
-
-  - name: consul_z3
-    instances: 1
-    networks:
-      - name: diego3
-        static_ips: (( static_ips(1) ))
-
-compilation:
-  cloud_properties:
-    instance_type: c1.medium
-    availability_zone: (( meta.zones.z1 ))
-
 properties:
-  template_only: (( merge ))
   diego:
-    stager:
-      min_disk_mb: 10240
     garden-linux:
       deny_networks:
         - 0.0.0.0/0
@@ -69,58 +14,30 @@ properties:
       allow_networks:
         - 10.10.0.2/32 # Amazon DNS
 
+compilation:
+  cloud_properties:
+    instance_type: c1.medium
+    availability_zone: (( meta.aws_availability_zone ))
+
+networks: (( merge ))
+
 resource_pools:
-  - name: small_z1
+  - name: small
     cloud_properties:
       instance_type: m3.medium
-      availability_zone: (( meta.zones.z1 ))
+      availability_zone: (( meta.aws_availability_zone ))
 
-  - name: small_z2
+  - name: medium
     cloud_properties:
       instance_type: m3.medium
-      availability_zone: (( meta.zones.z2 ))
+      availability_zone: (( meta.aws_availability_zone ))
 
-  - name: small_z3
-    cloud_properties:
-      instance_type: m3.medium
-      availability_zone: (( meta.zones.z3 ))
-
-  - name: medium_z1
-    cloud_properties:
-      instance_type: m3.medium
-      availability_zone: (( meta.zones.z1 ))
-
-  - name: medium_z2
-    cloud_properties:
-      instance_type: m3.medium
-      availability_zone: (( meta.zones.z2 ))
-
-  - name: medium_z3
-    cloud_properties:
-      instance_type: m3.medium
-      availability_zone: (( meta.zones.z3 ))
-
-  - name: large_z1
+  - name: large
     cloud_properties:
       instance_type: m2.2xlarge
-      availability_zone: (( meta.zones.z1 ))
+      availability_zone: (( meta.aws_availability_zone ))
 
-  - name: large_z2
-    cloud_properties:
-      instance_type: m2.2xlarge
-      availability_zone: (( meta.zones.z2 ))
-
-  - name: large_z3
-    cloud_properties:
-      instance_type: m2.2xlarge
-      availability_zone: (( meta.zones.z3 ))
-
-  - name: bridge_z1
+  - name: bridge
     cloud_properties:
       instance_type: c3.xlarge
-      availability_zone: (( meta.zones.z1 ))
-
-  - name: bridge_z2
-    cloud_properties:
-      instance_type: c3.xlarge
-      availability_zone: (( meta.zones.z2 ))
+      availability_zone: (( meta.aws_availability_zone ))

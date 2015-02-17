@@ -6,7 +6,7 @@
 # the border between cf and diego is ideally only this one property. so, this
 # template declares it as the whole structure, and the result is then fed into
 # diego's templates.
-external_services: (( merge ))
+external_cf_services: (( merge ))
 
 properties:
   domain: (( merge ))

@@ -1,0 +1,138 @@
+meta:
+  environment: (( merge ))
+  stemcell: (( merge ))
+
+director_uuid: (( merge ))
+
+name: (( merge || meta.environment "-diego-service-discovery" ))
+
+releases:
+  - name: diego
+    version: latest
+
+consul_servers: (( jobs.consul_z1.networks.service_discovery_z1.static_ips jobs.consul_z2.networks.service_discovery_z2.static_ips jobs.consul_z3.networks.service_discovery_z3.static_ips ))
+
+etcd_cluster: (( jobs.etcd_z1.networks.service_discovery_z1.static_ips jobs.etcd_z2.networks.service_discovery_z2.static_ips jobs.etcd_z3.networks.service_discovery_z3.static_ips ))
+
+jobs:
+  - name: consul_z1
+    release: diego
+    templates:
+      - name: consul-agent
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z1
+    networks:
+      - name: service_discovery_z1
+        static_ips: (( static_ips(0) ))
+    properties:
+      consul:
+        agent:
+          mode: server
+          servers:
+            lan: (( consul_servers ))
+
+  - name: consul_z2
+    release: diego
+    templates:
+      - name: consul-agent
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z2
+    networks:
+      - name: service_discovery_z2
+        static_ips: (( static_ips(0) ))
+    properties:
+      consul:
+        agent:
+          mode: server
+          servers:
+            lan: (( consul_servers ))
+
+  - name: consul_z3
+    release: diego
+    templates:
+      - name: consul-agent
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z3
+    networks:
+      - name: service_discovery_z3
+        static_ips: (( static_ips(0) ))
+    properties:
+      consul:
+        agent:
+          mode: server
+          servers:
+            lan: (( consul_servers ))
+
+  - name: etcd_z1
+    release: diego
+    templates:
+      - name: etcd
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z1
+    networks:
+      - name: service_discovery_z1
+        static_ips: (( static_ips(1) ))
+
+  - name: etcd_z2
+    release: diego
+    templates:
+      - name: etcd
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z2
+    networks:
+      - name: service_discovery_z2
+        static_ips: (( static_ips(1) ))
+
+  - name: etcd_z3
+    release: diego
+    templates:
+      - name: etcd
+    instances: 1
+    persistent_disk: 1024
+    resource_pool: service_discovery_z3
+    networks:
+      - name: service_discovery_z3
+        static_ips: (( static_ips(1) ))
+
+properties:
+  diego:
+    etcd:
+      machines: (( etcd_cluster ))
+
+compilation:
+  workers: 6
+  network: compilation
+  reuse_compilation_vms: true
+  cloud_properties: (( merge ))
+
+update:
+  canaries: 1
+  canary_watch_time: 5000-600000
+  update_watch_time: 5000-600000
+
+  # stay serial for these!
+  max_in_flight: 1
+  serial: true
+
+networks: (( merge ))
+
+resource_pools:
+  - name: service_discovery_z1
+    network: service_discovery_z1
+    stemcell: (( meta.stemcell ))
+    cloud_properties: (( merge ))
+
+  - name: service_discovery_z2
+    network: service_discovery_z2
+    stemcell: (( meta.stemcell ))
+    cloud_properties: (( merge ))
+
+  - name: service_discovery_z3
+    network: service_discovery_z3
+    stemcell: (( meta.stemcell ))
+    cloud_properties: (( merge ))

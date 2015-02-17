@@ -1,7 +1,7 @@
 ---
 properties:
   cc:
-    diego:
-        staging: optional
-        running: optional
     diego_docker: true
+    diego:
+      staging: optional
+      running: optional
