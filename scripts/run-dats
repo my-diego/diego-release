@@ -4,7 +4,7 @@ set -e
 
 ./scripts/generate-deployment-manifest \
   bosh-lite                            \
-  ../cf-release                        \
+  ~/deployments/bosh-lite/cf.yml       \
   ~/deployments/bosh-lite/director.yml \
   > ~/deployments/bosh-lite/diego.yml
 

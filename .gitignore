@@ -59,3 +59,10 @@ src/github.com/cloudfoundry/cf-acceptance-tests/
 
 tags
 .tags
+
+# stubs
+stubs/aws-subnet-configs.yml
+stubs/aws-zone-mapping.yml
+stubs/aws.yml
+stubs/bosh-lite.yml
+-rw-r--r--   1 amitgupta  staff   698 Mar 28 03:09 cf-config-for-diego.yml

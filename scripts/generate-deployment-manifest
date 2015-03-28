@@ -3,51 +3,67 @@
 set -e
 
 templates=$(dirname $0)/../templates
+stubs=$(dirname $0)/../stubs
+templates_for_stubs=$(dirname $0)/../templates-for-stubs
 
 infrastructure=$1
-cf_release=$2
+cf_manifest=$2
 
 shift
 shift
 
 function usage() {
   echo "    Usage:
-    $0 <aws|bosh-lite> /path/to/cf-release [stubs...]
+    $0 <aws|bosh-lite> /path/to/cf/deployment/manifest.yml [stubs...]
 
     Ex:
     $0 aws \\
-      ~/workspace/cf-release \\
-      ~/workspace/deployments-aws/ketchup/cf-aws-stub.yml \\
-      ~/workspace/deployments-aws/ketchup/cf-shared-secrets.yml
+      ~/deployments/ketchup/cf.yml \\
+      ~/workspaces/deployments-runtime/ketchup/stubs/*
 "
   exit 1
 }
+
+if [ -z "$cf_manifest" ]; then
+  usage
+fi
 
 if [ "$infrastructure" != "aws" ] && [ "$infrastructure" != "bosh-lite" ]; then
   usage
 fi
 
-if [ -z "$cf_release" ]; then
+if [ ! -f "$cf_manifest" ] ; then
   usage
 fi
 
-shared_stub=/tmp/cf-diego-shared.yml
-cf_infrastructure=$infrastructure
-if [ "$infrastructure" == "bosh-lite" ]; then
-  cf_infrastructure="warden"
+if [ "$infrastructure" == "aws" ]; then
+  spiff merge \
+    $templates_for_stubs/aws-subnet-configs.yml \
+    $templates_for_stubs/aws-subnet-configs-internal.yml \
+    $cf_manifest \
+    > ${stubs}/aws-subnet-configs.yml
+
+  spiff merge \
+    $templates_for_stubs/aws-zone-mapping.yml \
+    $templates_for_stubs/aws-zone-mapping-internal.yml \
+    $cf_manifest \
+    > ${stubs}/aws-zone-mapping.yml
+
+  spiff merge \
+    ${templates_for_stubs}/aws.yml \
+    ${stubs}/aws-subnet-configs.yml \
+    ${stubs}/aws-zone-mapping.yml \
+    > ${stubs}/aws.yml
 fi
 
 spiff merge \
-  $templates/cf-shared.yml \
-  $templates/diego-cf-stub.yml \
-  $cf_release/templates/cf-properties.yml \
-  $cf_release/templates/cf-infrastructure-${cf_infrastructure}.yml \
-  "$@" \
-  > $shared_stub
+  $templates_for_stubs/cf-config-for-diego.yml \
+  $templates_for_stubs/cf-config-for-diego-internal.yml \
+  $cf_manifest \
+  > ${stubs}/cf-config-for-diego.yml
 
 spiff merge \
   $templates/deployment.yml \
-  $templates/jobs.yml \
-  $templates/infrastructure-${infrastructure}.yml \
-  $shared_stub \
+  ${stubs}/${infrastructure}.yml \
+  ${stubs}/cf-config-for-diego.yml \
   "$@"

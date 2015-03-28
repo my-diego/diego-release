@@ -174,7 +174,8 @@ as you switch in and out of the directory.
 1. Generate and target diego's manifest:
 
         cd ~/workspace/diego-release
-        ./scripts/generate-deployment-manifest bosh-lite ../cf-release \
+        ./scripts/generate-deployment-manifest bosh-lite \
+            ~/deployments/bosh-lite/cf.yml \
             ~/deployments/bosh-lite/director.yml > \
             ~/deployments/bosh-lite/diego.yml
         bosh deployment ~/deployments/bosh-lite/diego.yml

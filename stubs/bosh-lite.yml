@@ -1,0 +1,146 @@
+meta:
+  stemcell:
+    name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+    version: latest
+
+compilation:
+  cloud_properties:
+    name: random
+
+properties:
+  diego:
+    garden-linux:
+      kernel_network_tuning_enabled: false
+      disk_quota_enabled: false
+      listen_network: tcp
+      listen_address: 0.0.0.0:7777
+      deny_networks:
+        - 0.0.0.0/0
+    executor:
+      drain_timeout_in_seconds: 0
+      garden:
+        network: tcp
+        address: 127.0.0.1:7777
+    ssl:
+      skip_cert_verify: true
+
+jobs:
+  - name: brain_z2
+    instances: 0
+  - name: cc_bridge_z2
+    instances: 0
+  - name: cell_z2
+    instances: 0
+  - name: etcd_z2
+    instances: 0
+  - name: route_emitter_z2
+    instances: 0
+  - name: etcd_z3
+    instances: 0
+
+resource_pools:
+  - name: brain_z1
+    cloud_properties:
+      name: random
+  - name: brain_z2
+    cloud_properties:
+      name: random
+  - name: brain_z3
+    cloud_properties:
+      name: random
+  - name: cc_bridge_z1
+    cloud_properties:
+      name: random
+  - name: cc_bridge_z2
+    cloud_properties:
+      name: random
+  - name: cc_bridge_z3
+    cloud_properties:
+      name: random
+  - name: cell_z1
+    cloud_properties:
+      name: random
+  - name: cell_z2
+    cloud_properties:
+      name: random
+  - name: cell_z3
+    cloud_properties:
+      name: random
+  - name: etcd_z1
+    cloud_properties:
+      name: random
+  - name: etcd_z2
+    cloud_properties:
+      name: random
+  - name: etcd_z3
+    cloud_properties:
+      name: random
+  - name: route_emitter_z1
+    cloud_properties:
+      name: random
+  - name: route_emitter_z2
+    cloud_properties:
+      name: random
+  - name: route_emitter_z3
+    cloud_properties:
+      name: random
+
+networks:
+- name: diego1
+  type: manual
+  subnets:
+  - cloud_properties:
+      name: random
+    range: 10.244.16.0/30
+    reserved:
+    - 10.244.16.1
+    static:
+    - 10.244.16.2
+  - cloud_properties:
+      name: random
+    range: 10.244.16.4/30
+    reserved:
+    - 10.244.16.5
+    static:
+    - 10.244.16.6
+  - cloud_properties:
+      name: random
+    range: 10.244.16.8/30
+    reserved:
+    - 10.244.16.9
+    static:
+    - 10.244.16.10
+  - cloud_properties:
+      name: random
+    range: 10.244.16.12/30
+    reserved:
+    - 10.244.16.13
+    static:
+    - 10.244.16.14
+  - cloud_properties:
+      name: random
+    range: 10.244.16.16/30
+    reserved:
+    - 10.244.16.17
+    static:
+    - 10.244.16.18
+- name: diego2
+  type: manual
+  subnets:
+  - cloud_properties:
+      name: random
+    range: 10.244.18.0/30
+    reserved:
+    - 10.244.18.1
+    static:
+    - 10.244.18.2
+- name: diego3
+  type: manual
+  subnets:
+  - cloud_properties:
+      name: random
+    range: 10.244.20.0/30
+    reserved:
+    - 10.244.20.1
+    static:
+    - 10.244.20.2

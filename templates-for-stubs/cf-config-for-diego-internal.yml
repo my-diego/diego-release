@@ -1,0 +1,31 @@
+cf_config_for_diego:
+  cf_deployment_name: (( meta.environment ))
+
+  domain: (( properties.domain ))
+
+  nats:
+    user: (( properties.nats.user ))
+    password: (( properties.nats.password ))
+    port: 4222
+    machines: (( jobs.nats_z1.networks.cf1.static_ips jobs.nats_z2.networks.cf2.static_ips ))
+
+  cc:
+    bulk_api_password: (( properties.cc.bulk_api_password ))
+    external_port: 9022
+    internal_api_password: (( properties.cc.internal_api_password ))
+    srv_api_uri: (( properties.cc.srv_api_uri ))
+    staging_upload_user: (( properties.cc.staging_upload_user ))
+    staging_upload_password: (( properties.cc.staging_upload_password ))
+
+  consul:
+    servers: (( jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
+
+  etcd:
+    machines: (( jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
+
+  loggregator_endpoint:
+    shared_secret: (( properties.loggregator_endpoint.shared_secret ))
+
+meta: (( merge ))
+jobs: (( merge ))
+properties: (( merge ))
