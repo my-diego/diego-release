@@ -341,8 +341,8 @@ properties:
   loggregator_endpoint:
     shared_secret: (( cf_config_for_diego.loggregator_endpoint.shared_secret ))
   syslog_daemon_config:
-    address: (( property_overrides.syslog_daemon_config.address || ~ ))
-    port: (( property_overrides.syslog_daemon_config.port || ~ ))
+    address: (( property_overrides.syslog_daemon_config.address || default.syslog_daemon_config.address ))
+    port: (( property_overrides.syslog_daemon_config.port || default.syslog_daemon_config.port ))
 
   # -- Property below is used by the consul_agent job from cf-release --
   consul:
@@ -354,7 +354,7 @@ properties:
   diego:
     # -- Global property --
     ssl:
-      skip_cert_verify: (( property_overrides.skip_cert_verify || ~ ))
+      skip_cert_verify: (( property_overrides.skip_cert_verify || default.skip_cert_verify ))
 
     # -- Job-specific properties --
     auctioneer:
@@ -366,19 +366,19 @@ properties:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
       log_level: info
     executor:
-      drain_timeout_in_seconds: (( property_overrides.executor.drain_timeout_in_seconds || ~ ))
+      drain_timeout_in_seconds: (( property_overrides.executor.drain_timeout_in_seconds || default.executor.drain_timeout_in_seconds ))
       garden:
-        network: (( property_overrides.executor.garden.network || ~ ))
-        address: (( property_overrides.executor.garden.address || ~ ))
+        network: (( property_overrides.executor.garden.network || default.executor.garden.network ))
+        address: (( property_overrides.executor.garden.address || default.executor.garden.address ))
       log_level: info
     etcd:
       machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
     garden-linux:
-      kernel_network_tuning_enabled: (( property_overrides.garden-linux.kernel_network_tuning_enabled || ~ ))
-      disk_quota_enabled: (( property_overrides.garden-linux.disk_quota_enabled || ~ ))
-      listen_network: (( property_overrides.garden-linux.listen_network || ~ ))
-      listen_address: (( property_overrides.garden-linux.listen_address || ~ ))
-      allow_networks: (( property_overrides.garden-linux.allow_networks || ~ ))))
+      kernel_network_tuning_enabled: (( property_overrides.garden-linux.kernel_network_tuning_enabled || default.garden-linux.kernel_network_tuning_enabled ))
+      disk_quota_enabled: (( property_overrides.garden-linux.disk_quota_enabled || default.garden-linux.disk_quota_enabled ))
+      listen_network: (( property_overrides.garden-linux.listen_network || default.garden-linux.listen_network ))
+      listen_address: (( property_overrides.garden-linux.listen_address || default.garden-linux.listen_address ))
+      allow_networks: (( property_overrides.garden-linux.allow_networks || ~ default.garden-linux.allow_networks)))
       deny_networks:
         - 0.0.0.0/0
 
@@ -413,11 +413,11 @@ properties:
         username: (( cf_config_for_diego.nats.user ))
         password: (( cf_config_for_diego.nats.password ))
         port: (( cf_config_for_diego.nats.port ))
-      cors_enabled: (( property_overrides.receptor.cors_enabled || ~ ))
-      username: (( property_overrides.receptor.username || ~ ))
-      password: (( property_overrides.receptor.password || ~ ))
-      register_with_router: (( property_overrides.receptor.register_with_router || ~ ))
-      domain_names:  (( property_overrides.receptor.domain_names || ~ ))
+      cors_enabled: (( property_overrides.receptor.cors_enabled || default.receptor.cors_enabled ))
+      username: (( property_overrides.receptor.username || default.receptor.username ))
+      password: (( property_overrides.receptor.password || default.receptor.password ))
+      register_with_router: (( property_overrides.receptor.register_with_router || default.receptor.register_with_router ))
+      domain_names:  (( property_overrides.receptor.domain_names || default.receptor.domain_names ))
       log_level: info
     rep:
       etcd:
@@ -468,3 +468,25 @@ properties:
 cf_config_for_diego: (( merge ))
 iaas_settings: (( merge ))
 property_overrides: (( merge ))
+default:
+  syslog_daemon_config:
+    address: ~
+    port: ~
+  skip_cert_verify: ~
+  executor:
+    drain_timeout_in_seconds: ~
+    garden:
+      network: ~
+      address: ~
+  garden-linux:
+    kernel_network_tuning_enabled: ~
+    disk_quota_enabled: ~
+    listen_network: ~
+    listen_address: ~
+    allow_networks: ~
+  receptor:
+    cors_enabled: ~
+    username: ""
+    password: ""
+    register_with_router: ~
+    domain_names: ~
