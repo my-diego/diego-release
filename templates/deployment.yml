@@ -348,7 +348,7 @@ properties:
   consul:
     agent:
       servers:
-        lan: (( cf_config_for_diego.consul.servers ))
+        lan: (( cf_config_for_diego.consul.lan_servers ))
 
   # -- Proerties below are used by jobs from diego-release --
   diego:
