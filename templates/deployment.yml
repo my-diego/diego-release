@@ -1,11 +1,6 @@
-meta:
-  stemcell: (( merge ))
-
-cf_config_for_diego: (( merge ))
+director_uuid: (( merge ))
 
 name: (( cf_config_for_diego.cf_deployment_name "-diego" ))
-
-director_uuid: (( merge ))
 
 releases:
   - name: diego
@@ -17,7 +12,7 @@ compilation:
   workers: 6
   network: diego1
   reuse_compilation_vms: true
-  cloud_properties: (( merge ))
+  cloud_properties: (( iaas_settings.compilation_cloud_properties ))
 
 update:
   canaries: 1
@@ -26,90 +21,85 @@ update:
   canary_watch_time: 5000-120000
   update_watch_time: 5000-120000
 
-networks: (( merge ))
+networks:
+  - name: diego1
+    type: manual
+    subnets: (( iaas_settings.subnet_configs.diego1.subnets ))
+  - name: diego2
+    type: manual
+    subnets: (( iaas_settings.subnet_configs.diego2.subnets ))
+  - name: diego3
+    type: manual
+    subnets: (( iaas_settings.subnet_configs.diego3.subnets ))
 
 resource_pools:
   - name: brain_z1
     network: diego1
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z1.cloud_properties ))
   - name: brain_z2
     network: diego2
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z2.cloud_properties ))
   - name: brain_z3
     network: diego3
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z3.cloud_properties ))
   - name: cc_bridge_z1
     network: diego1
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z1.cloud_properties ))
   - name: cc_bridge_z2
     network: diego2
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z2.cloud_properties ))
   - name: cc_bridge_z3
     network: diego3
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z3.cloud_properties ))
   - name: cell_z1
     network: diego1
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z1.cloud_properties ))
   - name: cell_z2
     network: diego2
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z2.cloud_properties ))
   - name: cell_z3
     network: diego3
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z3.cloud_properties ))
   - name: etcd_z1
     network: diego1
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.etcd_z1.cloud_properties ))
   - name: etcd_z2
     network: diego2
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.etcd_z2.cloud_properties ))
   - name: etcd_z3
     network: diego3
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.etcd_z3.cloud_properties ))
   - name: route_emitter_z1
     network: diego1
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z1.cloud_properties ))
   - name: route_emitter_z2
     network: diego2
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
-
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z2.cloud_properties ))
   - name: route_emitter_z3
     network: diego3
-    stemcell: (( meta.stemcell ))
-    cloud_properties: (( merge ))
+    stemcell: (( iaas_settings.stemcell ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z3.cloud_properties ))
 
 jobs:
   - name: etcd_z1
     templates:
       - name: etcd
         release: diego
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.etcd_z1.instances || 1 ))
     persistent_disk: 1024
     resource_pool: etcd_z1
     networks:
@@ -131,7 +121,7 @@ jobs:
         release: diego
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.brain_z1.instances || 1 ))
     resource_pool: brain_z1
     networks:
       - name: diego1
@@ -155,7 +145,7 @@ jobs:
         release: diego
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.cell_z1.instances || 1 ))
     resource_pool: cell_z1
     networks:
       - name: diego1
@@ -184,7 +174,7 @@ jobs:
         release: cf
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.cc_bridge_z1.instances || 1 ))
     resource_pool: cc_bridge_z1
     networks:
       - name: diego1
@@ -207,7 +197,7 @@ jobs:
         release: cf
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.route_emitter_z1.instances || 1 ))
     resource_pool: route_emitter_z1
     networks:
       - name: diego1
@@ -219,7 +209,7 @@ jobs:
     templates:
       - name: etcd
         release: diego
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.etcd_z2.instances || 1 ))
     persistent_disk: 1024
     resource_pool: etcd_z2
     networks:
@@ -241,7 +231,7 @@ jobs:
         release: diego
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.brain_z2.instances || 1 ))
     resource_pool: brain_z2
     networks:
       - name: diego2
@@ -265,7 +255,7 @@ jobs:
         release: diego
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.cell_z2.instances || 1 ))
     resource_pool: cell_z2
     networks:
       - name: diego2
@@ -294,7 +284,7 @@ jobs:
         release: cf
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.cc_bridge_z2.instances || 1 ))
     resource_pool: cc_bridge_z2
     networks:
       - name: diego2
@@ -317,7 +307,7 @@ jobs:
         release: cf
       - name: metron_agent
         release: cf
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.route_emitter_z2.instances || 1 ))
     resource_pool: route_emitter_z2
     networks:
       - name: diego2
@@ -329,7 +319,7 @@ jobs:
     templates:
       - name: etcd
         release: diego
-    instances: 1
+    instances: (( iaas_settings.instance_count_overrides.etcd_z3.instances || 1 ))
     persistent_disk: 1024
     resource_pool: etcd_z3
     networks:
@@ -346,14 +336,13 @@ properties:
     user: (( cf_config_for_diego.nats.user ))
     password: (( cf_config_for_diego.nats.password ))
     port: (( cf_config_for_diego.nats.port ))
-
   etcd: # For metron_agent to find loggregator
     machines: (( cf_config_for_diego.etcd.machines ))
-
   loggregator_endpoint:
     shared_secret: (( cf_config_for_diego.loggregator_endpoint.shared_secret ))
-
-  syslog_daemon_config: ~
+  syslog_daemon_config:
+    address: (( property_overrides.syslog_daemon_config.address || ~ ))
+    port: (( property_overrides.syslog_daemon_config.port || ~ ))
 
   # -- Property below is used by the consul_agent job from cf-release --
   consul:
@@ -363,32 +352,35 @@ properties:
 
   # -- Proerties below are used by jobs from diego-release --
   diego:
-    # -- Global properties --
+    # -- Global property --
     ssl:
-      skip_cert_verify: false
+      skip_cert_verify: (( property_overrides.skip_cert_verify || ~ ))
 
     # -- Job-specific properties --
     auctioneer:
       etcd:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
       log_level: info
-
     converger:
       etcd:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
       log_level: info
-
     executor:
-      allow_privileged: ~
-      drain_timeout_in_seconds: ~
-      export_network_env_vars: ~
-      garden: ~
+      drain_timeout_in_seconds: (( property_overrides.executor.drain_timeout_in_seconds || ~ ))
+      garden:
+        network: (( property_overrides.executor.garden.network || ~ ))
+        address: (( property_overrides.executor.garden.address || ~ ))
       log_level: info
-
     etcd:
       machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
-
-    garden-linux: ~
+    garden-linux:
+      kernel_network_tuning_enabled: (( property_overrides.garden-linux.kernel_network_tuning_enabled || ~ ))
+      disk_quota_enabled: (( property_overrides.garden-linux.disk_quota_enabled || ~ ))
+      listen_network: (( property_overrides.garden-linux.listen_network || ~ ))
+      listen_address: (( property_overrides.garden-linux.listen_address || ~ ))
+      allow_networks: (( property_overrides.garden-linux.allow_networks || ~ ))))
+      deny_networks:
+        - 0.0.0.0/0
 
     file_server:
       cc:
@@ -398,7 +390,6 @@ properties:
         staging_upload_user: (( cf_config_for_diego.cc.staging_upload_user ))
         staging_upload_password: (( cf_config_for_diego.cc.staging_upload_password ))
       log_level: info
-
     nsync:
       diego_api_url: (( "http://" receptor.username ":" receptor.password "@receptor.service.consul:8888" ))
       cc:
@@ -414,10 +405,7 @@ properties:
         buildpack/lucid64: buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
         buildpack/windows2012R2: windows_app_lifecycle/windows_app_lifecycle.tgz
         docker: docker_app_lifecycle/docker_app_lifecycle.tgz
-
     receptor:
-      cors_enabled: false
-      domain_names: ~
       etcd:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
       nats:
@@ -425,16 +413,16 @@ properties:
         username: (( cf_config_for_diego.nats.user ))
         password: (( cf_config_for_diego.nats.password ))
         port: (( cf_config_for_diego.nats.port ))
-      username: ""
-      password: ""
-      register_with_router: false
+      cors_enabled: (( property_overrides.receptor.cors_enabled || ~ ))
+      username: (( property_overrides.receptor.username || ~ ))
+      password: (( property_overrides.receptor.password || ~ ))
+      register_with_router: (( property_overrides.receptor.register_with_router || ~ ))
+      domain_names:  (( property_overrides.receptor.domain_names || ~ ))
       log_level: info
-
     rep:
       etcd:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
       log_level: info
-
     route_emitter:
       diego_api_url: (( "http://" receptor.username ":" receptor.password "@receptor.service.consul:8888" ))
       etcd:
@@ -445,7 +433,6 @@ properties:
         password: (( cf_config_for_diego.nats.password ))
         port: (( cf_config_for_diego.nats.port ))
       log_level: info
-
     runtime_metrics_server:
       etcd:
         machines: (( jobs.etcd_z1.networks.diego1.static_ips jobs.etcd_z2.networks.diego2.static_ips jobs.etcd_z3.networks.diego3.static_ips ))
@@ -454,7 +441,6 @@ properties:
         username: (( cf_config_for_diego.nats.user ))
         password: (( cf_config_for_diego.nats.password ))
         port: (( cf_config_for_diego.nats.port ))
-
     stager:
       cc:
         base_url: (( cf_config_for_diego.cc.srv_api_uri ))
@@ -469,7 +455,6 @@ properties:
         buildpack/windows2012R2: windows_app_lifecycle/windows_app_lifecycle.tgz
         docker: docker_app_lifecycle/docker_app_lifecycle.tgz
       log_level: info
-
     tps:
       cc:
         base_url: (( cf_config_for_diego.cc.srv_api_uri ))
@@ -479,3 +464,7 @@ properties:
         staging_upload_password: (( cf_config_for_diego.cc.staging_upload_password ))
       diego_api_url: (( "http://" receptor.username ":" receptor.password "@receptor.service.consul:8888" ))
       log_level: info
+
+cf_config_for_diego: (( merge ))
+iaas_settings: (( merge ))
+property_overrides: (( merge ))

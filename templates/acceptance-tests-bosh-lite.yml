@@ -1,6 +1,6 @@
-name: diego-acceptance-tests
-
 director_uuid: (( merge ))
+
+name: diego-acceptance-tests
 
 releases:
   - name: diego

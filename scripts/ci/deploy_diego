@@ -16,7 +16,12 @@ pushd diego-release
   bosh -n upload release --rebase || true
 
   bosh download manifest ${cf_deployment_name} cf.yml
-  ./scripts/generate-deployment-manifest ${INFRASTRUCTURE} cf.yml ${stubs_path}/* > diego-deployment.yml
+  ./scripts/generate-deployment-manifest \
+    ${INFRASTRUCTURE} \
+    cf.yml \
+    ${stubs_path}/director-uuid.yml \
+    ${stubs_path}/property-overrides.yml \
+    > diego-deployment.yml
   bosh deployment diego-deployment.yml
 
   ./scripts/ci/emit-datadog-deploy-event started ${cf_deployment_name} diego

@@ -1,6 +1,0 @@
-aws_subnet_configs:
-  diego1: (( networks.diego1.subnets ))
-  diego2: (( networks.diego2.subnets ))
-  diego3: (( networks.diego3.subnets ))
-
-networks: (( merge ))

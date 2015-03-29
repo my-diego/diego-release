@@ -3,28 +3,35 @@
 set -e
 
 templates=$(dirname $0)/../templates
-stubs=$(dirname $0)/../stubs
 templates_for_stubs=$(dirname $0)/../templates-for-stubs
-
-infrastructure=$1
-cf_manifest=$2
-
-shift
-shift
+stubs=$(dirname $0)/../stubs
 
 function usage() {
   echo "    Usage:
-    $0 <aws|bosh-lite> /path/to/cf/deployment/manifest.yml [stubs...]
+    $0 <aws|bosh-lite> \\
+      /path/to/cf-deployment-manifest.yml \\
+      /path/to/director-uuid-stub.yml \\
+      /path/to/property-overrides-stub.yml
 
     Ex:
     $0 aws \\
       ~/deployments/ketchup/cf.yml \\
-      ~/workspaces/deployments-runtime/ketchup/stubs/*
+      ~/workspaces/deployments-runtime/ketchup/stubs/director-uuid.yml \\
+      ~/workspaces/deployments-runtime/ketchup/stubs/property-overrides.yml
 "
   exit 1
 }
 
-if [ -z "$cf_manifest" ]; then
+if [ -z "$4" ]; then
+  usage
+fi
+
+infrastructure=$1
+cf_manifest=$2
+director_uuid_stub=$3
+property_overrides_stub=$4
+
+if [ -z "$property_overrides_stub" ]; then
   usage
 fi
 
@@ -32,28 +39,16 @@ if [ "$infrastructure" != "aws" ] && [ "$infrastructure" != "bosh-lite" ]; then
   usage
 fi
 
-if [ ! -f "$cf_manifest" ] ; then
+if [ ! -f "$cf_manifest" ] || [ ! -f "$director_uuid_stub" ] || [ ! -f "$property_overrides_stub" ]; then
   usage
 fi
 
 if [ "$infrastructure" == "aws" ]; then
   spiff merge \
-    $templates_for_stubs/aws-subnet-configs.yml \
-    $templates_for_stubs/aws-subnet-configs-internal.yml \
+    $templates_for_stubs/iaas-settings.yml \
+    $templates_for_stubs/aws-iaas-settings-internal.yml \
     $cf_manifest \
-    > ${stubs}/aws-subnet-configs.yml
-
-  spiff merge \
-    $templates_for_stubs/aws-zone-mapping.yml \
-    $templates_for_stubs/aws-zone-mapping-internal.yml \
-    $cf_manifest \
-    > ${stubs}/aws-zone-mapping.yml
-
-  spiff merge \
-    ${templates_for_stubs}/aws.yml \
-    ${stubs}/aws-subnet-configs.yml \
-    ${stubs}/aws-zone-mapping.yml \
-    > ${stubs}/aws.yml
+    > ${stubs}/aws-iaas-settings.yml
 fi
 
 spiff merge \
@@ -64,6 +59,7 @@ spiff merge \
 
 spiff merge \
   $templates/deployment.yml \
-  ${stubs}/${infrastructure}.yml \
+  ${director_uuid_stub} \
+  ${stubs}/${infrastructure}-iaas-settings.yml \
   ${stubs}/cf-config-for-diego.yml \
-  "$@"
+  ${property_overrides_stub}

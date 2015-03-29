@@ -20,7 +20,7 @@ When working on individual components of Diego, work out of the submodules under
 See [Initial Setup](#initial-setup).
 
 Run the individual component unit tests as you work on them using
-[ginkgo](https://github.com/onsi/ginkgo). To see if *everything* still works, run 
+[ginkgo](https://github.com/onsi/ginkgo). To see if *everything* still works, run
 `./scripts/run-unit-tests` in the root of the release.
 
 When you're ready to commit, run:
@@ -92,7 +92,7 @@ as you switch in and out of the directory.
 
 1. Install the `fly` CLI:
 
-        # cd to the concourse release repo, 
+        # cd to the concourse release repo,
         cd /path/to/concourse/repo
 
         # switch to using the concourse $GOPATH and $PATH setup temporarily
@@ -160,8 +160,8 @@ as you switch in and out of the directory.
         cd ~/workspace/cf-release
         ./generate_deployment_manifest warden \
             ~/deployments/bosh-lite/director.yml \
-            ~/workspace/diego-release/templates/enable_diego_docker_in_cc.yml > \
-            ~/deployments/bosh-lite/cf.yml
+            ~/workspace/diego-release/stubs-for-cf-release/enable_diego_docker_in_cc.yml \
+            > ~/deployments/bosh-lite/cf.yml
         bosh deployment ~/deployments/bosh-lite/cf.yml
 
 1. Do the BOSH dance:
@@ -176,8 +176,9 @@ as you switch in and out of the directory.
         cd ~/workspace/diego-release
         ./scripts/generate-deployment-manifest bosh-lite \
             ~/deployments/bosh-lite/cf.yml \
-            ~/deployments/bosh-lite/director.yml > \
-            ~/deployments/bosh-lite/diego.yml
+            ~/deployments/bosh-lite/director.yml \
+            stubs/bosh-lite-property-overrides.yml \
+            > ~/deployments/bosh-lite/diego.yml
         bosh deployment ~/deployments/bosh-lite/diego.yml
 
 1. Dance some more:

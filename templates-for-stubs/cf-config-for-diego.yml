@@ -1,2 +1,19 @@
-cf_config_for_diego: (( merge ))
-
+cf_config_for_diego:
+  cf_deployment_name: (( merge ))
+  cc:
+    external_port: (( merge ))
+    internal_api_password: (( merge ))
+    srv_api_uri: (( merge ))
+    staging_upload_user: (( merge ))
+    staging_upload_password: (( merge ))
+  consul:
+    lan_servers: (( merge ))
+  etcd:
+    machines: (( merge ))
+  loggregator_endpoint:
+    shared_secret: (( merge ))
+  nats:
+    user: (( merge ))
+    password: (( merge ))
+    port: (( merge ))
+    machines: (( merge ))

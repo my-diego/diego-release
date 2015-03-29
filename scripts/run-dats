@@ -6,6 +6,7 @@ set -e
   bosh-lite                            \
   ~/deployments/bosh-lite/cf.yml       \
   ~/deployments/bosh-lite/director.yml \
+  stubs/bosh-lite-property-overrides.yml \
   > ~/deployments/bosh-lite/diego.yml
 
 echo "WARNING: targeting BOSH-Lite director and setting Diego deployment manifest"
