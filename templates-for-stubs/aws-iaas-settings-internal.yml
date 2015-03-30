@@ -20,68 +20,68 @@ iaas_settings:
       instances: 0
   compilation_cloud_properties:
     instance_type: c1.medium
-    availability_zone: (( meta.zones.z1 ))
+    availability_zone: (( properties.template_only.aws.availability_zone ))
   resource_pool_cloud_properties:
     - name: brain_z1
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z1 ))
+        availability_zone: (( properties.template_only.aws.availability_zone ))
     - name: brain_z2
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z2 ))
+        availability_zone: (( properties.template_only.aws.availability_zone2 ))
     - name: brain_z3
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z3 ))
+        availability_zone: (( properties.template_only.aws.availability_zone3 ))
     - name: cc_bridge_z1
       cloud_properties:
         instance_type: c3.xlarge
-        availability_zone: (( meta.zones.z1 ))
+        availability_zone: (( properties.template_only.aws.availability_zone ))
     - name: cc_bridge_z2
       cloud_properties:
         instance_type: c3.xlarge
-        availability_zone: (( meta.zones.z2 ))
+        availability_zone: (( properties.template_only.aws.availability_zone2 ))
     - name: cc_bridge_z3
       cloud_properties:
         instance_type: c3.xlarge
-        availability_zone: (( meta.zones.z3 ))
+        availability_zone: (( properties.template_only.aws.availability_zone3 ))
     - name: cell_z1
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z1 ))
+        availability_zone: (( properties.template_only.aws.availability_zone ))
     - name: cell_z2
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z2 ))
+        availability_zone: (( properties.template_only.aws.availability_zone2 ))
     - name: cell_z3
       cloud_properties:
         instance_type: m2.2xlarge
-        availability_zone: (( meta.zones.z3 ))
+        availability_zone: (( properties.template_only.aws.availability_zone3 ))
     - name: etcd_z1
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z1 ))
+        availability_zone: (( properties.template_only.aws.availability_zone ))
     - name: etcd_z2
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z2 ))
+        availability_zone: (( properties.template_only.aws.availability_zone2 ))
     - name: etcd_z3
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z3 ))
+        availability_zone: (( properties.template_only.aws.availability_zone3 ))
     - name: route_emitter_z1
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z1 ))
+        availability_zone: (( properties.template_only.aws.availability_zone ))
     - name: route_emitter_z2
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z2 ))
+        availability_zone: (( properties.template_only.aws.availability_zone2 ))
     - name: route_emitter_z3
       cloud_properties:
         instance_type: m3.medium
-        availability_zone: (( meta.zones.z3 ))
+        availability_zone: (( properties.template_only.aws.availability_zone3 ))
 
 networks:
   - name: diego1
@@ -90,8 +90,9 @@ networks:
     subnets: (( merge ))
   - name: diego3
     subnets: (( merge ))
-meta:
-  zones:
-    z1: (( merge ))
-    z2: (( merge ))
-    z3: (( merge ))
+properties:
+  template_only:
+    aws:
+      availability_zone: (( merge ))
+      availability_zone2: (( merge ))
+      availability_zone3: (( merge ))
