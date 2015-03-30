@@ -378,7 +378,7 @@ properties:
       disk_quota_enabled: (( property_overrides.garden-linux.disk_quota_enabled || default.garden-linux.disk_quota_enabled ))
       listen_network: (( property_overrides.garden-linux.listen_network || default.garden-linux.listen_network ))
       listen_address: (( property_overrides.garden-linux.listen_address || default.garden-linux.listen_address ))
-      allow_networks: (( property_overrides.garden-linux.allow_networks || ~ default.garden-linux.allow_networks)))
+      allow_networks: (( property_overrides.garden-linux.allow_networks || default.garden-linux.allow_networks ))
       deny_networks:
         - 0.0.0.0/0
 
